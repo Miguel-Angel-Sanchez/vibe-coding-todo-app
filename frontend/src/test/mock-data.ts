@@ -26,6 +26,20 @@ export const mockItems = {
     tags: [mockTags.bug, mockTags.feature],
   },
   minimal: { id: 4, name: "Minimal", description: "", tags: [] },
+  withDueDate: {
+    id: 5,
+    name: "Task with Due Date",
+    description: "Has a due date",
+    due_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    tags: [],
+  },
+  overdue: {
+    id: 6,
+    name: "Overdue Task",
+    description: "Already past due",
+    due_date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    tags: [],
+  },
 };
 
 export function createMockItem(overrides?: Partial<Item>): Item {
