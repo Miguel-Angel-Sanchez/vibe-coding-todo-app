@@ -1,5 +1,6 @@
 """Unit tests for item use cases"""
 
+from datetime import datetime
 from unittest.mock import AsyncMock
 
 import pytest
@@ -201,6 +202,38 @@ class TestUpdateItemUseCase:
         assert result.name == "New Name"
         # Description should remain unchanged since we passed None
         mock_repo.update.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_allows_clearing_due_date_with_null(self):
+        """Test clearing due date when null is explicitly provided"""
+        # Arrange
+        mock_repo = AsyncMock()
+        current_item = create_item_entity(
+            id=1,
+            name="Old Name",
+            description="Old Description",
+            due_date=datetime(2026, 1, 1, 0, 0, 0),
+        )
+        updated_item = create_item_entity(
+            id=1,
+            name="Old Name",
+            description="Old Description",
+            due_date=None,
+        )
+        mock_repo.get_by_id.return_value = current_item
+        mock_repo.update.return_value = updated_item
+        dto = create_item_update_dto(name=None, description=None, due_date=None)
+        use_case = UpdateItemUseCase(mock_repo)
+
+        # Act
+        result = await use_case.execute(item_id=1, dto=dto)
+
+        # Assert
+        assert result is not None
+        assert result.due_date is None
+        mock_repo.update.assert_called_once()
+        call_args = mock_repo.update.call_args
+        assert call_args[0][1].due_date is None
 
     @pytest.mark.asyncio
     async def test_execute_returns_none_when_item_not_found(self):

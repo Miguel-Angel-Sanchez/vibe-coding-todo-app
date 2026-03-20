@@ -37,7 +37,7 @@ class CreateItemUseCase:
 
     async def execute(self, dto: ItemCreateDTO) -> ItemDTO:
         """Create a new item"""
-        item = Item(name=dto.name, description=dto.description)
+        item = Item(name=dto.name, description=dto.description, due_date=dto.due_date)
         created_item = await self.repository.create(item, tag_ids=dto.tag_ids)
         return ItemDTO.model_validate(created_item)
 
@@ -55,11 +55,13 @@ class UpdateItemUseCase:
         if current_item is None:
             return None
 
-        # Update fields if provided
-        if dto.name is not None:
+        # Update only fields explicitly provided in request payload
+        if "name" in dto.model_fields_set:
             current_item.name = dto.name
-        if dto.description is not None:
+        if "description" in dto.model_fields_set:
             current_item.description = dto.description
+        if "due_date" in dto.model_fields_set:
+            current_item.due_date = dto.due_date
 
         updated_item = await self.repository.update(item_id, current_item, tag_ids=dto.tag_ids)
         return ItemDTO.model_validate(updated_item)
