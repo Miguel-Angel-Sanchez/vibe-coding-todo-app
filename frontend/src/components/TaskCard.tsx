@@ -8,6 +8,34 @@ interface TaskCardProps {
   onDragStart: (e: React.DragEvent<HTMLElement>, item: Item) => void;
 }
 
+function getDueDateStyle(dueDateStr: string): string {
+  const now = new Date();
+  const due = new Date(dueDateStr);
+  const diffMs = due.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  if (diffHours <= 0 || due.toDateString() === now.toDateString()) {
+    // Expired or due today → red
+    return "text-red-600";
+  }
+  if (diffHours < 48) {
+    // Less than 48 hours → orange
+    return "text-orange-500";
+  }
+  return "text-slate-500";
+}
+
+function formatDueDate(dueDateStr: string): string {
+  const due = new Date(dueDateStr);
+  return due.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function TaskCard({
   item,
   onDelete,
@@ -26,6 +54,14 @@ export default function TaskCard({
           <h3 className="text-sm font-medium text-slate-800">{item.name}</h3>
           {item.description && (
             <p className="mt-1 text-xs text-slate-500">{item.description}</p>
+          )}
+          {item.due_date && (
+            <p
+              data-testid={`task-due-date-${item.id}`}
+              className={`mt-1 text-xs font-medium ${getDueDateStyle(item.due_date)}`}
+            >
+              📅 {formatDueDate(item.due_date)}
+            </p>
           )}
           {item.tags && item.tags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">

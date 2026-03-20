@@ -40,6 +40,7 @@ describe("TaskForm", () => {
         name: "Test Task",
         description: "",
         tag_ids: [],
+        due_date: null,
       });
     });
   });
@@ -64,6 +65,7 @@ describe("TaskForm", () => {
         name: "Test Task",
         description: "Test Description",
         tag_ids: [],
+        due_date: null,
       });
     });
   });
