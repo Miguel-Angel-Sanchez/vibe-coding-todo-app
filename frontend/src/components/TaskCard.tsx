@@ -8,12 +8,47 @@ interface TaskCardProps {
   onDragStart: (e: React.DragEvent<HTMLElement>, item: Item) => void;
 }
 
+function getDueDateStyle(due_date: string | null | undefined): {
+  className: string;
+  label: string;
+} | null {
+  if (!due_date) return null;
+
+  const now = new Date();
+  const due = new Date(due_date);
+
+  // Strip time to compare calendar days
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const diffMs = due.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  const formatted = due.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  if (dueStart <= todayStart) {
+    // Expired or due today → red
+    return { className: "text-rose-600 font-medium", label: formatted };
+  }
+  if (diffHours < 48) {
+    // Less than 48 hours remaining → orange
+    return { className: "text-orange-500 font-medium", label: formatted };
+  }
+  // More than 48 hours → slate
+  return { className: "text-slate-500", label: formatted };
+}
+
 export default function TaskCard({
   item,
   onDelete,
   onEdit,
   onDragStart,
 }: TaskCardProps) {
+  const dueDateStyle = getDueDateStyle(item.due_date);
+
   return (
     <article
       data-testid={`task-${item.id}`}
@@ -26,6 +61,14 @@ export default function TaskCard({
           <h3 className="text-sm font-medium text-slate-800">{item.name}</h3>
           {item.description && (
             <p className="mt-1 text-xs text-slate-500">{item.description}</p>
+          )}
+          {dueDateStyle && (
+            <p
+              data-testid={`task-due-date-${item.id}`}
+              className={`mt-1 text-xs ${dueDateStyle.className}`}
+            >
+              📅 {dueDateStyle.label}
+            </p>
           )}
           {item.tags && item.tags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">

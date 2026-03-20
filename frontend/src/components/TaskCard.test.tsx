@@ -122,4 +122,37 @@ describe("TaskCard", () => {
     expect(taskCard).toHaveClass("rounded-lg");
     expect(taskCard).toHaveClass("cursor-grab");
   });
+
+  it("does not render due date when not set", () => {
+    render(<TaskCard {...defaultProps} item={mockItems.simple} />);
+    expect(
+      screen.queryByTestId(`task-due-date-${mockItems.simple.id}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders due date with red color when expired", () => {
+    const expiredItem = { ...mockItems.simple, due_date: "2020-01-01T00:00:00" };
+    render(<TaskCard {...defaultProps} item={expiredItem} />);
+    const dueDateEl = screen.getByTestId(`task-due-date-${expiredItem.id}`);
+    expect(dueDateEl).toBeInTheDocument();
+    expect(dueDateEl).toHaveClass("text-rose-600");
+  });
+
+  it("renders due date with orange color when less than 48 hours away", () => {
+    const soon = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const urgentItem = { ...mockItems.simple, due_date: soon };
+    render(<TaskCard {...defaultProps} item={urgentItem} />);
+    const dueDateEl = screen.getByTestId(`task-due-date-${urgentItem.id}`);
+    expect(dueDateEl).toBeInTheDocument();
+    expect(dueDateEl).toHaveClass("text-orange-500");
+  });
+
+  it("renders due date with normal color when more than 48 hours away", () => {
+    const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const futureItem = { ...mockItems.simple, due_date: future };
+    render(<TaskCard {...defaultProps} item={futureItem} />);
+    const dueDateEl = screen.getByTestId(`task-due-date-${futureItem.id}`);
+    expect(dueDateEl).toBeInTheDocument();
+    expect(dueDateEl).toHaveClass("text-slate-500");
+  });
 });
