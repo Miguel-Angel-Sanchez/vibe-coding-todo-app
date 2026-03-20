@@ -114,6 +114,36 @@ describe("TaskCard", () => {
     );
   });
 
+  it("renders due date when present", () => {
+    render(<TaskCard {...defaultProps} item={mockItems.withDueDate} />);
+    expect(
+      screen.getByTestId(`task-due-date-${mockItems.withDueDate.id}`),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render due date when not set", () => {
+    render(<TaskCard {...defaultProps} item={mockItems.simple} />);
+    expect(
+      screen.queryByTestId(`task-due-date-${mockItems.simple.id}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders overdue date in red", () => {
+    render(<TaskCard {...defaultProps} item={mockItems.overdue} />);
+    const dueDateEl = screen.getByTestId(
+      `task-due-date-${mockItems.overdue.id}`,
+    );
+    expect(dueDateEl).toHaveClass("text-red-600");
+  });
+
+  it("renders upcoming due date (within 48h) in orange", () => {
+    render(<TaskCard {...defaultProps} item={mockItems.withDueDate} />);
+    const dueDateEl = screen.getByTestId(
+      `task-due-date-${mockItems.withDueDate.id}`,
+    );
+    expect(dueDateEl).toHaveClass("text-orange-500");
+  });
+
   it("has correct styling classes", () => {
     render(<TaskCard {...defaultProps} />);
     const taskCard = screen.getByTestId(`task-${mockItems.simple.id}`);

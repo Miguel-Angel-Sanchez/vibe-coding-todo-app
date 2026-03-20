@@ -39,6 +39,7 @@ describe("TaskForm", () => {
       expect(onSubmit).toHaveBeenCalledWith({
         name: "Test Task",
         description: "",
+        due_date: null,
         tag_ids: [],
       });
     });
@@ -63,6 +64,7 @@ describe("TaskForm", () => {
       expect(onSubmit).toHaveBeenCalledWith({
         name: "Test Task",
         description: "Test Description",
+        due_date: null,
         tag_ids: [],
       });
     });
@@ -161,5 +163,36 @@ describe("TaskForm", () => {
     expect(
       screen.getByRole("button", { name: /create task/i }),
     ).toBeInTheDocument();
+  });
+
+  it("renders due date field", () => {
+    render(<TaskForm {...defaultProps} />);
+    expect(screen.getByTestId("task-due-date-input")).toBeInTheDocument();
+    expect(screen.getByLabelText(/due date/i)).toBeInTheDocument();
+  });
+
+  it("submits form with due date", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+    render(<TaskForm {...defaultProps} onSubmit={onSubmit} />);
+
+    const nameInput = screen.getByTestId("task-name-input");
+    await user.type(nameInput, "Task with Date");
+
+    const dueDateInput = screen.getByTestId("task-due-date-input");
+    await user.type(dueDateInput, "2030-12-31T10:00");
+
+    const submitButton = screen.getByRole("button", { name: /create task/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Task with Date",
+          due_date: expect.any(String),
+        }),
+      );
+    });
   });
 });
