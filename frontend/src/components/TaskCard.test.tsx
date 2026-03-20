@@ -122,4 +122,48 @@ describe("TaskCard", () => {
     expect(taskCard).toHaveClass("rounded-lg");
     expect(taskCard).toHaveClass("cursor-grab");
   });
+
+  it("renders due date when provided", () => {
+    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const itemWithDueDate = { ...mockItems.simple, due_date: futureDate };
+    render(<TaskCard {...defaultProps} item={itemWithDueDate} />);
+
+    const dueDateEl = screen.getByTestId(`task-due-date-${itemWithDueDate.id}`);
+    expect(dueDateEl).toBeInTheDocument();
+  });
+
+  it("does not render due date section when not provided", () => {
+    render(<TaskCard {...defaultProps} item={mockItems.simple} />);
+
+    expect(
+      screen.queryByTestId(`task-due-date-${mockItems.simple.id}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows due date in red when expired", () => {
+    const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const itemExpired = { ...mockItems.simple, due_date: pastDate };
+    render(<TaskCard {...defaultProps} item={itemExpired} />);
+
+    const dueDateEl = screen.getByTestId(`task-due-date-${itemExpired.id}`);
+    expect(dueDateEl).toHaveClass("text-red-600");
+  });
+
+  it("shows due date in orange when less than 48 hours away", () => {
+    const soonDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const itemSoon = { ...mockItems.simple, due_date: soonDate };
+    render(<TaskCard {...defaultProps} item={itemSoon} />);
+
+    const dueDateEl = screen.getByTestId(`task-due-date-${itemSoon.id}`);
+    expect(dueDateEl).toHaveClass("text-orange-500");
+  });
+
+  it("shows due date in slate when more than 48 hours away", () => {
+    const laterDate = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+    const itemLater = { ...mockItems.simple, due_date: laterDate };
+    render(<TaskCard {...defaultProps} item={itemLater} />);
+
+    const dueDateEl = screen.getByTestId(`task-due-date-${itemLater.id}`);
+    expect(dueDateEl).toHaveClass("text-slate-500");
+  });
 });
